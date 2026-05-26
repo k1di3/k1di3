@@ -1,0 +1,209 @@
+@import url('../style.css');
+
+
+body {
+  line-height: 1.7;
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 3rem;
+}
+
+header {
+  background: rgba(8, 24, 8, 0.92);
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+  padding: 1.5rem 1.6rem;
+  margin-bottom: 1.8rem;
+  box-shadow: 0 0 0 1px rgba(139,206,139,0.08), 0 0 24px rgba(0,0,0,0.35);
+}
+
+h1 {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  line-height: 1.15;
+  letter-spacing: 0.06em;
+  color: var(--text-green);
+  text-shadow: var(--glow-green);
+  margin-bottom: 0.55rem;
+}
+
+.meta {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.meta p {
+  margin-bottom: 0.25rem;
+}
+
+.severity {
+  display: inline-block;
+  margin-top: 0.95rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-dim);
+  font-family: 'Orbitron', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--bg-card);
+  color: var(--text-green);
+  box-shadow: 0 0 10px rgba(139,206,139,0.12);
+}
+
+.severity.severity-critical {
+  color: var(--red-crit);
+  border-color: rgba(139,115,85,0.42);
+  background: rgba(139,115,85,0.14);
+}
+
+.severity.severity-high {
+  color: var(--orange-high);
+  border-color: rgba(160,98,63,0.42);
+  background: rgba(160,98,63,0.14);
+}
+
+.severity.severity-medium {
+  color: var(--yellow-med);
+  border-color: rgba(157,141,66,0.42);
+  background: rgba(157,141,66,0.14);
+}
+
+.severity.severity-low {
+  color: var(--green-low);
+  border-color: rgba(122,154,122,0.42);
+  background: rgba(122,154,122,0.14);
+}
+
+h2 {
+  margin-top: 2.1rem;
+  margin-bottom: 1rem;
+  padding-left: 0.85rem;
+  border-left: 4px solid rgba(139,206,139,0.18);
+  color: var(--text-green);
+  font-family: 'Orbitron', monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+h3 {
+  margin-top: 1.4rem;
+  margin-bottom: 0.7rem;
+  color: var(--text-primary);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+p,
+li {
+  color: var(--text-primary);
+  opacity: 0.92;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+ul,
+ol {
+  margin-left: 1.6rem;
+  margin-bottom: 1rem;
+}
+
+li {
+  margin-bottom: 0.75rem;
+}
+
+code {
+  color: var(--text-green);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.94em;
+}
+
+.code-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  border-left: 4px solid var(--border-glow);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0 1.4rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.code-block code {
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.highlight {
+  display: inline-block;
+  background: rgba(139,115,85,0.14);
+  color: var(--red-crit);
+  border: 1px solid rgba(139,115,85,0.28);
+  padding: 0.12rem 0.36rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.impact-box {
+  margin: 1.2rem 0;
+  padding: 1rem 1.05rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-dim);
+  background: rgba(10, 30, 10, 0.42);
+  border-left: 4px solid var(--red-crit);
+  background: rgba(139,115,85,0.08);
+}
+
+.impact-box {
+  border-left: 4px solid var(--red-crit);
+  background: rgba(139,115,85,0.08);
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--border-dim);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-green);
+  text-decoration: none;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.back-link:hover {
+  border-color: var(--text-green);
+  box-shadow: var(--glow-green);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  .container {
+    padding: 1.2rem 1rem 2rem;
+  }
+
+  header {
+    padding: 1.2rem 1rem;
+  }
+
+  h2 {
+    font-size: 0.98rem;
+  }
+
+  .code-block {
+    padding: 0.9rem;
+  }
+}

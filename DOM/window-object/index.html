@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Window Object — DOM Security Research</title>
+  <meta name="description" content="Research on the window object in JavaScript and exploitation techniques.">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../dom-styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="../">
+        <div>
+          <div class="logo-text">WINDOW</div>
+          <div class="logo-sub">Object</div>
+        </div>
+      </a>
+      <div class="header-stats">
+        <div class="stat-pill">TOPIC <span>WINDOW</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-wrap">
+    <h1 class="topic-title">What is the window object</h1>
+
+    <p class="topic-desc">In the browser, all global JavaScript lives inside the window object, is like the main container of everything the page can do.</p>
+
+    <article class="vuln-card found">
+      <div class="obsidian-note">
+<h2 style="font-family: 'Orbitron', monospace; color: var(--text-green); margin-bottom: 1rem;">Examples</h2>
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">For example:</p>
+<pre><code>alert(1)</code></pre>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">In reality it is:</p>
+<pre><code>window.alert(1)</code></pre>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">For instance if as an attacker we gain access to the window object we could execute arbitrary JS. This is awesome if we are in a sandboxed enviroment.</p>
+
+<h3>Aliases for <code>window</code></h3>
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">There are several aliases for the <code>window</code> object:</p>
+<ul style="color: rgba(242,255,234,0.9);">
+  <li><code>self</code></li>
+  <li><code>top</code></li>
+  <li><code>parent</code></li>
+  <li><code>frames</code></li>
+  <li><code>globalThis</code></li>
+  <li><code>document.defaultView</code></li>
+</ul>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">Notes about these aliases:</p>
+<ul style="color: rgba(242,255,234,0.9);">
+  <li><strong><code>self</code></strong> refers to the current context and is usually the same as <code>window</code>.</li>
+  <li><strong><code>parent</code></strong> is the parent iframe, if we are not in an iframe then <code>parent === window</code>.</li>
+  <li><strong><code>top</code></strong> refers to the highest-level window, inside nested iframes, <code>top</code> points to the main page window.</li>
+  <li><strong><code>document.defaultView</code></strong> stores a reference to the current window object and works only when you have a <code>document</code> object.</li>
+</ul>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">Example:</p>
+<pre><code>document.defaultView === window // true</code></pre>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">So we could call alert by doing this :</p>
+<pre><code>document.defaultView.alert(1)</code></pre>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">This is perfect if the code blocks stuff like this : </p>
+
+<pre><code>window.eval</code></pre>
+<pre><code>window.alert</code></pre>
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">There is a trick to obtain the document object from a DOM node to then access the defaultView property . We can use a property called ownerDocument to get the document object used by the DOM node.</p>
+<pre><code>let node = document.createElement('div');
+node.ownerDocument.defaultView.alert(1)</code></pre>
+
+<h3>Using an event object</h3>
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">Another way to obtain the window object is by an <code>event</code> object.</p>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">When something happens in the browser (like a click or an error), the browser creates an <code>event</code> object.</p>
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">In Chrome, some events include:</p>
+
+<pre><code>event.path</code></pre>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">It is an array of elements that the event passed through.</p>
+<pre><code>[event.target, ..., document, window]</code></pre>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">The last element is usually the <code>window</code> object, so if we use <code>.path</code> with <code>.pop()</code> the last element of the array will be returned:</p>
+<pre><code>&lt;image href=1 onerror=event.path.pop().alert(1)&gt;</code></pre>
+
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">Chrome has since removed the path property on the event object. The good
+thing is we can use the standardised composedPath() method below that will do the same shit.
+</p>
+
+<pre><code>&lt;image href=1 onerror=event.composedPath().pop().alert(1)&gt;</code></pre>
+
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">Usually, each handler adds an argument with the event object except for SVG elements, this ones will add <code>evt</code> , so we could use this payload:</p>
+<pre><code>&lt;svg&gt;&lt;image href=1 onerror=evt.composedPath().pop().alert(1)&gt;</code></pre>
+
+<h3>Stack trace trick</h3>
+<p style="color: rgba(242,255,234,0.9); line-height: 1.6;">In chrome, if you use the <code>Error.prepareStackTrace</code> callback on an <code>Error</code> object, you can customize stack traces, we could use this to get access to the window object. The idea here is you provide a function that has two arguments one for the error message and the other for an array of
+CallSite objects . A CallSite object consists of properties and methods
+related to the stack trace. And how we could achive window object ? Well, Chrome provide us with <code>CallSite.getThis()</code> , a method for CallSite objects that will return a window object if there's no `this` defined.</p>
+
+<pre><code>Error.prepareStackTrace = function(error, callSites) {
+  callSites.shift().getThis().alert(1);
+};
+new Error().stack</code></pre>
+      </div>
+    </article>
+
+    <a class="back-btn" href="../">← Back to DOM Research</a>
+  </main>
+</body>
+</html>

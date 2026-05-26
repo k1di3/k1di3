@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How does JS works — DOM Security Research</title>
+  <meta name="description" content="Research on JavaScript fundamentals.">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../dom-styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="../">
+        <div>
+          <div class="logo-text">JAVASCRIPT</div>
+          <div class="logo-sub">Fundamentals</div>
+        </div>
+      </a>
+      <div class="header-stats">
+        <div class="stat-pill">TOPIC <span>JS</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-wrap">
+    <h1 class="topic-title">How JavaScript Works</h1>
+    <p class="topic-desc">A practical breakdown of the browser execution model: call stack, heap, Web APIs, task queue, and the event loop.</p>
+
+    <article class="vuln-card found">
+      <div class="obsidian-note">
+        <p>JavaScript execution (in the browser) relies on these 5 components:</p>
+
+        <h2>1. Call Stack</h2>
+        <ul>
+          <li>Executes functions (synchronous code)</li>
+        </ul>
+
+        <h2>2. Heap</h2>
+        <ul>
+          <li>Stores objects, arrays, and functions in memory</li>
+        </ul>
+
+        <h2>3. Web APIs (from the browser)</h2>
+        <ul>
+          <li>timers (<code>setTimeout</code>)</li>
+          <li>events (<code>click</code>, <code>error</code>)</li>
+          <li>fetch, etc.</li>
+        </ul>
+
+        <h2>4. Task Queue</h2>
+        <ul>
+          <li>Where asynchronous callbacks wait to be executed</li>
+        </ul>
+
+        <h2>5. Event Loop</h2>
+        <ul>
+          <li>conects stack ↔ queue</li>
+        </ul>
+
+        <p>Here is an example of JS Call stack.</p>
+        <pre><code class="language-js">function a() {  
+b();  
+}  
+  
+function b() {  
+console.log("hi");  
+}  
+  
+a();</code></pre>
+
+        <p>In the example above, the Call stack will look like this:</p>
+        <pre><code class="language-text">a()
+ └── b()
+      └── console.log()</code></pre>
+
+        <p>JavaScript is single-threaded, meaning it executes one thing at a time.</p>
+        <pre><code class="language-js">console.log("1");
+
+setTimeout(() =&gt; {
+  console.log("2");
+}, 0);
+
+console.log("3");</code></pre>
+
+        <p>The snipet above will leave this output:</p>
+        <pre><code class="language-text">1
+3
+2</code></pre>
+
+        <p>But how is this possible ? Shouldn't it be 1,2,3 ?</p>
+
+        <p>Let my explaint it step by step:</p>
+
+        <p>Step 1 :</p>
+        <pre><code class="language-js">console.log("1");</code></pre>
+        <p>goes to stack -&gt; gets executed</p>
+
+        <p>Step 2:</p>
+        <pre><code class="language-js">setTimeout(...)</code></pre>
+        <p>goes to the Web APIs, where the timer starts, it does NOT stay on the call stack</p>
+
+        <p>Step 3 :</p>
+        <pre><code class="language-js">console.log("3");</code></pre>
+        <p>goes to stack -&gt; gets executed</p>
+
+        <p>Step 4 :</p>
+        <p>Once the timer finishes, its callback is added to the task queue</p>
+
+        <p>Step 5 :</p>
+        <p>Here event loop will see that the stack is empty and that we have the setTimeout callback in qeue, so setTimeout callback is now added to the stack</p>
+
+        <p>Step 6 :</p>
+        <pre><code class="language-js">console.log("2");</code></pre>
+        <p>As soon as the setTimeout callback gets added to the stack, it will get executed</p>
+
+        <h2>Microtasks and Promises</h2>
+
+        <p>There is one more queue that matters in the browser: the microtask queue. Promises and <code>queueMicrotask()</code> use it, and it is processed before the task queue after the current stack finishes.</p>
+
+        <p>This is why a promise callback runs before a <code>setTimeout(..., 0)</code> callback.</p>
+        <pre><code class="language-js">console.log("1");
+
+setTimeout(() =&gt; {
+  console.log("3");
+}, 0);
+
+Promise.resolve().then(() =&gt; {
+  console.log("2");
+});
+
+console.log("4");</code></pre>
+
+        <p>The output becomes:</p>
+        <pre><code class="language-text">1
+4
+2
+3</code></pre>
+
+        <p>The reason is:</p>
+        <ul>
+          <li>The stack executes <code>console.log("1")</code></li>
+          <li><code>setTimeout</code> goes to the Web APIs and later the task queue</li>
+          <li>The promise callback goes to the microtask queue</li>
+          <li>When the stack is empty, the engine drains microtasks first</li>
+          <li>Only then does it move to the task queue</li>
+        </ul>
+
+        <p>Here is a visual summary of the runtime flow:</p>
+        <img src="../assets/js-runtime-flow.svg" alt="JavaScript runtime flow diagram" style="display:block; max-width: 100%; width: 100%; height: auto; margin: 1rem 0 0.5rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: #111;" />
+      </div>
+    </article>
+
+    <a class="back-btn" href="../">← Back to DOM Research</a>
+  </main>
+</body>
+</html>

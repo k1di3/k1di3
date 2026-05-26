@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">JavaScript runtime flow diagram</title>
+  <desc id="desc">Diagram showing call stack, heap, Web APIs, task queue, microtask queue, and event loop flow in the browser.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#101316"/>
+      <stop offset="100%" stop-color="#181d22"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#24303a"/>
+      <stop offset="100%" stop-color="#151b21"/>
+    </linearGradient>
+    <style>
+      .title { fill: #f0f5f2; font-family: Arial, Helvetica, sans-serif; font-size: 26px; font-weight: 700; }
+      .label { fill: #d8e2dc; font-family: Arial, Helvetica, sans-serif; font-size: 18px; font-weight: 700; }
+      .text { fill: #b8c4bf; font-family: Arial, Helvetica, sans-serif; font-size: 14px; }
+      .chip { fill: #1a2228; stroke: #3a4a55; stroke-width: 2; }
+      .stack { fill: #2d5b7a; }
+      .heap { fill: #3f6f4e; }
+      .api { fill: #8a5a2e; }
+      .queue { fill: #5f4b8b; }
+      .micro { fill: #7b3d5b; }
+      .loop { fill: #d5dbe0; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d5dbe0"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="420" rx="22" fill="url(#bg)"/>
+  <text x="40" y="44" class="title">Browser JavaScript runtime</text>
+
+  <rect x="40" y="80" width="170" height="110" rx="16" class="chip stack"/>
+  <text x="125" y="115" text-anchor="middle" class="label">Call Stack</text>
+  <text x="125" y="142" text-anchor="middle" class="text">sync code</text>
+  <text x="125" y="162" text-anchor="middle" class="text">function calls</text>
+
+  <rect x="40" y="220" width="170" height="110" rx="16" class="chip heap"/>
+  <text x="125" y="255" text-anchor="middle" class="label">Heap</text>
+  <text x="125" y="282" text-anchor="middle" class="text">objects</text>
+  <text x="125" y="302" text-anchor="middle" class="text">arrays / functions</text>
+
+  <rect x="265" y="80" width="170" height="110" rx="16" class="chip api"/>
+  <text x="350" y="115" text-anchor="middle" class="label">Web APIs</text>
+  <text x="350" y="142" text-anchor="middle" class="text">setTimeout</text>
+  <text x="350" y="162" text-anchor="middle" class="text">events / fetch</text>
+
+  <rect x="265" y="220" width="170" height="110" rx="16" class="chip micro"/>
+  <text x="350" y="255" text-anchor="middle" class="label">Microtask Queue</text>
+  <text x="350" y="282" text-anchor="middle" class="text">Promise.then</text>
+  <text x="350" y="302" text-anchor="middle" class="text">queueMicrotask</text>
+
+  <rect x="520" y="80" width="170" height="110" rx="16" class="chip queue"/>
+  <text x="605" y="115" text-anchor="middle" class="label">Task Queue</text>
+  <text x="605" y="142" text-anchor="middle" class="text">callbacks wait here</text>
+  <text x="605" y="162" text-anchor="middle" class="text">setTimeout / events</text>
+
+  <rect x="520" y="220" width="170" height="110" rx="16" class="chip"/>
+  <text x="605" y="255" text-anchor="middle" class="label">Event Loop</text>
+  <text x="605" y="282" text-anchor="middle" class="text">checks stack</text>
+  <text x="605" y="302" text-anchor="middle" class="text">then drains queues</text>
+
+  <rect x="760" y="140" width="160" height="110" rx="16" class="chip"/>
+  <text x="840" y="175" text-anchor="middle" class="label">Execution</text>
+  <text x="840" y="202" text-anchor="middle" class="text">code runs only when</text>
+  <text x="840" y="222" text-anchor="middle" class="text">stack is free</text>
+
+  <line x1="210" y1="135" x2="255" y2="135" stroke="#d5dbe0" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="210" y1="275" x2="255" y2="275" stroke="#d5dbe0" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="435" y1="135" x2="510" y2="135" stroke="#d5dbe0" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="435" y1="275" x2="510" y2="275" stroke="#d5dbe0" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="690" y1="135" x2="755" y2="175" stroke="#d5dbe0" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="690" y1="275" x2="755" y2="195" stroke="#d5dbe0" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M840 140 C840 90, 605 60, 350 80" fill="none" stroke="#d5dbe0" stroke-width="3" stroke-dasharray="8 8" marker-end="url(#arrow)"/>
+</svg>

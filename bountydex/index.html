@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOUNTY-DEX — Bug Bounty Vulnerability Registry</title>
+  <meta name="description" content="Personal Bug Bounty vulnerability tracker — catch them all.">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐛</text></svg>">
+</head>
+<body>
+
+    <div class="boot-screen" id="bootScreen">
+    <div class="boot-logo">BOUNTY-DEX</div>
+    <div class="boot-sub">BUG BOUNTY VULNERABILITY REGISTRY v1.0</div>
+    <div class="boot-bar-wrap">
+      <div class="boot-bar-fill" id="bootBar"></div>
+    </div>
+    <div class="boot-msg" id="bootMsg">INITIALIZING...</div>
+  </div>
+
+    <header>
+    <div class="header-inner">
+      <a class="logo" href="#">
+        
+        <div>
+          <div class="logo-text">BOUNTY-DEX</div>
+          <div class="logo-sub">Bug Bounty Registry</div>
+        </div>
+      </a>
+
+      <div class="header-stats">
+        <div class="stat-pill">CAPTURED <span id="statFound">0</span>/<span id="statTotal">0</span></div>
+        <div class="stat-pill">COMPLETION <span id="statPct">0%</span></div>
+      </div>
+
+      <div class="header-search">
+        <span class="search-icon">⌕</span>
+        <input
+          class="search-input"
+          id="searchInput"
+          type="text"
+          placeholder="Search vulnerabilities..."
+          spellcheck="false"
+          autocomplete="off"
+        >
+      </div>
+    </div>
+  </header>
+
+    <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-title">REGISTRY COMPLETION</span>
+      <span class="progress-pct" id="progressPct"></span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+    <div class="filters-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active" data-filter="all">ALL</button>
+    <button class="filter-btn" data-filter="found">CAPTURED</button>
+    <button class="filter-btn" data-filter="notfound">UNDISCOVERED</button>
+    <div class="sep"></div>
+    <span class="filter-label">Severity:</span>
+    <button class="filter-btn severity-critical" data-filter="sev:Critical">CRITICAL</button>
+    <button class="filter-btn severity-high" data-filter="sev:High">HIGH</button>
+    <button class="filter-btn severity-medium" data-filter="sev:Medium">MEDIUM</button>
+    <button class="filter-btn severity-low" data-filter="sev:Low">LOW</button>
+    <div class="sep"></div>
+    <span class="filter-label">Type:</span>
+    <button class="filter-btn" data-filter="type:Injection">INJECTION</button>
+    <button class="filter-btn" data-filter="type:Client-Side">CLIENT-SIDE</button>
+    <button class="filter-btn" data-filter="type:Network">NETWORK</button>
+    <button class="filter-btn" data-filter="type:Auth">AUTH</button>
+    <button class="filter-btn" data-filter="type:Logic">LOGIC</button>
+    <button class="filter-btn" data-filter="type:API">API</button>
+  </div>
+
+    <div class="grid-section">
+    <div class="vuln-grid" id="vulnGrid">
+          </div>
+  </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-severity-bar" id="modalSevBar"></div>
+      <button class="modal-close" id="modalClose">✕</button>
+
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon"></div>
+        <div class="modal-title-area">
+          <div class="modal-codename" id="modalCodename"></div>
+          <div class="modal-fullname" id="modalFullname"></div>
+          <div class="modal-id" id="modalId"></div>
+        </div>
+      </div>
+
+      <div class="modal-tags" id="modalTags"></div>
+
+      <div class="modal-desc" id="modalDesc"></div>
+
+      <div class="modal-status" id="modalStatus">
+                <a class="writeup-btn" id="writeupBtn" href="#" target="_blank" rel="noopener">
+          📝 READ WRITEUP ↗
+        </a>
+      </div>
+
+      <div class="writeup-input-wrap" id="writeupInputWrap" style="display:none">
+        <label class="writeup-input-label" for="writeupInput">Writeup URL</label>
+        <input
+          class="writeup-input"
+          id="writeupInput"
+          type="url"
+          placeholder="https://your-blog.com/writeup/..."
+          spellcheck="false"
+        >
+      </div>
+
+      <div class="modal-actions">
+        <button class="action-btn btn-found" id="btnMarkFound">✓ Mark as Found</button>
+        <button class="action-btn btn-unfound" id="btnMarkUnfound" style="display:none">✕ Mark as Not Found</button>
+      </div>
+    </div>
+  </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="../vulns.js"></script>
+  <script src="../app.js"></script>
+</body>
+</html>

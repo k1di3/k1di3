@@ -1,0 +1,215 @@
+/* DOM Research Styles */
+
+.dom-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dom-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(1.7rem, 3.6vw, 2.3rem);
+  letter-spacing: 0.08em;
+  color: var(--text-green);
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+}
+
+.dom-sub {
+  color: var(--text-dim);
+  max-width: 760px;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  font-size: 0.88rem;
+}
+
+.dom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2.4rem;
+  margin-bottom: 2rem;
+}
+
+.dom-card {
+  padding-bottom: 1.6rem;
+  cursor: default;
+}
+
+.dom-card:hover {
+  transform: none;
+}
+
+.dom-item-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 1rem;
+  margin-bottom: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.dom-item-copy {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: rgba(242,255,234,0.9);
+}
+
+.dom-back {
+  display: inline-block;
+  text-decoration: none;
+  background: var(--bg-card);
+  color: var(--text-green);
+  border: 1px solid var(--border-dim);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.topic-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.topic-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: 0.08em;
+  color: var(--text-green);
+  margin-bottom: 0.8rem;
+}
+
+.topic-desc {
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.back-btn {
+  display: inline-block;
+  margin-top: 2rem;
+  text-decoration: none;
+  background: var(--bg-card);
+  color: var(--text-green);
+  border: 1px solid var(--border-dim);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .dom-wrap,
+  .topic-wrap {
+    padding: 1.2rem;
+  }
+}
+
+/* Obsidian-like note styling (keeps our theme variables) */
+.obsidian-note {
+  background: transparent; /* remove colored panel */
+  border: none; /* remove green border */
+  border-radius: 6px;
+  padding: 1.4rem 1.6rem;
+  color: rgba(242,255,234,0.95);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  line-height: 1.7;
+  box-shadow: none; /* remove shadow */
+}
+
+.obsidian-note h2,
+.obsidian-note h3 {
+  font-family: 'Orbitron', monospace;
+  color: var(--text-green);
+  margin: 0.6rem 0 0.6rem 0;
+}
+
+.obsidian-note p { 
+  margin: 0.55rem 0;
+  color: rgba(242,255,234,0.9);
+}
+
+.obsidian-note pre {
+  background: rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 0.9rem 1rem;
+  border-radius: 6px;
+  overflow: auto;
+  margin: 0.6rem 0;
+}
+
+.obsidian-note code {
+  background: rgba(0,0,0,0.06);
+  padding: 0.08rem 0.35rem;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
+  color: var(--text-green);
+}
+
+.obsidian-note ul {
+  margin-left: 1.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.obsidian-note blockquote {
+  border-left: 3px solid rgba(0,0,0,0.12);
+  padding-left: 0.9rem;
+  color: rgba(220,240,220,0.9);
+  margin: 0.6rem 0;
+}
+
+.postmessage-shot {
+  background: linear-gradient(180deg, #f4f6f7, #e8ecef);
+  color: #3b4651;
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  margin: 0.6rem 0 1rem;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+/* Images used as postmessage shots should not inherit the placeholder styling */
+img.postmessage-shot {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0.8rem 0 1rem !important;
+  min-height: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+  object-fit: contain !important;
+}
+
+.obsidian-note pre + .postmessage-shot,
+.postmessage-shot + .postmessage-shot {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .obsidian-note { padding: 1rem; }
+}
+
+/* Override global vuln-card styling inside topic pages to remove green panel */
+.topic-wrap .vuln-card,
+.topic-wrap .vuln-card.found,
+.topic-wrap .vuln-card.not-found {
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important; /* inner spacing comes from .obsidian-note */
+}
+
+.topic-wrap .vuln-card::before {
+  display: none !important;
+}
