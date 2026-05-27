@@ -329,4 +329,16 @@ const VULNERABILITIES = [
     found: false,
     writeupUrl: ""
   }
+  ,
+  {
+    id: "031",
+    name: "LLM Injection",
+    codename: "LLMi",
+    type: "Injection",
+    severity: "High",
+    pokemonId: 200,
+    description: "Malicious prompt or data injected into language-model-driven components causing unauthorized actions, data exfiltration, or incorrect outputs.",
+    found: false,
+    writeupUrl: "writeups/llm-injection.html"
+  }
 ];

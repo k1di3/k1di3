@@ -32,42 +32,18 @@
         <h2>Level 0</h2>
 
         <p>Basic example of postMessage listener:</p>
-        <img class="postmessage-shot" src="../assets/postmessage/shot1.svg" alt="Basic postMessage listener">
+        <img class="postmessage-shot" src="../assets/postmessage/shot1.png" alt="Basic postMessage listener">
 
         <p>Example of how to send info to a listener:</p>
-        <img class="postmessage-shot" src="../assets/postmessage/shot2.svg" alt="Sending info to listener">
+        <img class="postmessage-shot" src="../assets/postmessage/shot2.png" alt="Sending info to listener">
 
         <pre><code class="language-text">Hi = message
 * = origin</code></pre>
 
         <p>Basic postMessage vulnerability:</p>
-        <img class="postmessage-shot" src="../assets/postmessage/shot3.svg" alt="Vulnerable postMessage listener">
+        <img class="postmessage-shot" src="../assets/postmessage/shot3.png" alt="Vulnerable postMessage listener">
 
-        <p>Here the message it recieves will be passed throigh an eval function, leading to XSS. To exploit this XSS we must do a web page that sends a postMessage to the listener:</p>
-        <img class="postmessage-shot" src="../assets/postmessage/shot4.svg" alt="Exploit page that sends postMessage">
+        <p>Here the message it recieves will be passed through an eval function, leading to XSS. To exploit this XSS we must do a web page that sends a postMessage to the listener:</p>
+        <img class="postmessage-shot" src="../assets/postmessage/shot4.png" alt="Exploit page that sends postMessage">
 
-        <h2>Level 1</h2>
-
-        <p>Vulnerable listener :</p>
-        <img class="postmessage-shot" src="../assets/postmessage/shot5.svg" alt="Origin-validated listener">
-
-        <p>The eval function will only be executed if the origin from the post message is <code>"https://trustfoundry.net"</code></p>
-
-        <img class="postmessage-shot" src="../assets/postmessage/shot6.svg" alt="Exploit demonstrating partial origin validation">
-
-        <p>LABS:</p>
-        <ul>
-          <li><a href="https://public-firing-range.appspot.com/dom/toxicdom/postMessage/eval" target="_blank" rel="noreferrer">postMessage/eval</a></li>
-          <li><a href="https://public-firing-range.appspot.com/dom/toxicdom/postMessage/innerHtml" target="_blank" rel="noreferrer">postMessage/innerHtml</a></li>
-          <li><a href="https://public-firing-range.appspot.com/dom/toxicdom/postMessage/documentWrite" target="_blank" rel="noreferrer">postMessage/documentWrite</a></li>
-          <li><a href="https://public-firing-range.appspot.com/dom/toxicdom/postMessage/complexMessageDocumentWriteEval" target="_blank" rel="noreferrer">postMessage/complexMessageDocumentWriteEval</a></li>
-          <li><a href="https://public-firing-range.appspot.com/dom/toxicdom/postMessage/improperOriginValidationWithPartialStringComparison" target="_blank" rel="noreferrer">postMessage/improperOriginValidationWithPartialStringComparison</a></li>
-          <li><a href="https://public-firing-range.appspot.com/dom/toxicdom/postMessage/improperOriginValidationWithRegExp" target="_blank" rel="noreferrer">postMessage/improperOriginValidationWithRegExp</a></li>
-        </ul>
-      </div>
-    </article>
-
-    <a class="back-btn" href="../">← Back to DOM Research</a>
-  </main>
-</body>
-</html>
+    
