@@ -6,6 +6,18 @@
   padding: 2rem;
 }
 
+.dom-disclaimer {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(139,206,139,0.25);
+  background: rgba(139,206,139,0.08);
+  color: rgba(242,255,234,0.92);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  max-width: 760px;
+}
+
 .dom-title {
   font-family: 'Orbitron', monospace;
   font-size: clamp(1.7rem, 3.6vw, 2.3rem);
@@ -21,6 +33,29 @@
   margin-bottom: 1.5rem;
   line-height: 1.5;
   font-size: 0.88rem;
+}
+
+.dom-sources-btn {
+  display: inline-block;
+  text-decoration: none;
+  background: var(--bg-card);
+  color: var(--text-green);
+  border: 1px solid var(--border-dim);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0.35rem 0 0;
+}
+
+.dom-sources-btn:hover,
+.dom-sources-btn:focus-visible,
+.dom-back:hover,
+.dom-back:focus-visible,
+.back-btn:hover,
+.back-btn:focus-visible {
+  border-color: var(--text-green);
+  box-shadow: var(--glow-green);
 }
 
 .dom-grid {
@@ -96,6 +131,10 @@
   .dom-wrap,
   .topic-wrap {
     padding: 1.2rem;
+  }
+
+  .dom-disclaimer {
+    display: block;
   }
 }
 

